@@ -1,101 +1,120 @@
-# NestJS Application Folder Structure
+# NestJS-Base Folder Structure
 
 **Last Updated:** January 29, 2026
 
-This document provides a comprehensive guide to the folder structure of this NestJS application. It serves as a reference for understanding where different types of code should live.
+This document provides a comprehensive guide to the folder structure of the NestJS-Base boilerplate. It serves as a reference for understanding where different types of code should live and how to organize your application as it grows.
 
 ---
 
-## Root Level Structure
+## Current Project Structure
 
 ```
-src/              - Application source code
-test/             - All test files (unit, integration, e2e)
-docs/             - User-facing documentation
-ai-docs/          - AI assistant reference documentation
-scripts/          - Utility scripts for development/deployment
-.env              - Environment variables (gitignored)
-.env.example      - Environment variables template
+NestJS-Base/
+├── .husky/              - Git hooks (pre-commit, pre-push)
+├── docs/                - Documentation
+│   ├── database/        - Database documentation
+│   ├── guides/          - Development guides
+│   └── FOLDER_STRUCTURE.md (this file)
+├── scripts/             - Utility scripts
+├── src/                 - Application source code
+│   ├── config/          - Configuration files
+│   ├── core/            - Core infrastructure modules
+│   │   └── database/    - Database module and migrations
+│   └── features/        - Feature modules
+│       └── users/       - User management (boilerplate)
+├── test/                - E2E tests
+├── .env                 - Environment variables (gitignored)
+├── .gitignore          - Git ignore patterns
+├── .prettierrc         - Prettier configuration
+├── nest-cli.json       - NestJS CLI configuration
+├── package.json        - Dependencies and scripts
+├── README.md           - Project documentation
+├── tsconfig.json       - TypeScript configuration
+└── tsconfig.build.json - Build-specific TypeScript config
 ```
 
 **Root Level Files:**
-- `.env` - Environment variables (never committed)
-- `.env.example` - Template for environment variables
-- `package.json` - Dependencies and scripts
-- `tsconfig.json` - TypeScript configuration
-- `nest-cli.json` - NestJS CLI configuration
+- `.env` - Environment variables (never committed to Git)
 - `.gitignore` - Git ignore patterns
+- `package.json` - Dependencies and npm scripts
+- `tsconfig.json` - Main TypeScript configuration
+- `tsconfig.build.json` - Build-specific TypeScript config
+- `nest-cli.json` - NestJS CLI configuration
+- `.prettierrc` - Code formatting rules
+- `README.md` - Project documentation
 
 ---
 
 ## src/ Directory
 
-### src/common/
-**Purpose:** Shared utilities and cross-cutting concerns used throughout the application
+The `src/` directory contains all application source code.
 
-**Contains:**
-- `decorators/` - Custom decorators (e.g., @CurrentUser, @ApiPaginatedResponse)
-- `filters/` - Exception filters for error handling
-- `guards/` - Shared guards (e.g., rate limiting, feature flags)
-- `interceptors/` - Shared interceptors (e.g., logging, response transformation)
-- `pipes/` - Validation and transformation pipes
-- `middleware/` - Custom middleware (e.g., request logging, correlation ID)
-- `interfaces/` - Shared TypeScript interfaces and types
-- `constants/` - Application-wide constants and enums
-- `utils/` - Pure utility functions with no dependencies
+### Current Structure
 
-**Rules:**
-- No business logic
-- No feature-specific code
-- Must be framework-agnostic where possible
-- Should be reusable across any feature
+```
+src/
+├── app.controller.ts       - Main health check controller
+├── app.controller.spec.ts  - Controller unit tests
+├── app.module.ts           - Root application module
+├── main.ts                 - Application entry point & bootstrap
+├── config/                 - Configuration management
+│   ├── app.config.ts       - General app configuration
+│   ├── database.config.ts  - Database/TypeORM configuration
+│   ├── jwt.config.ts       - JWT authentication settings
+│   ├── typeorm-cli.config.ts - TypeORM CLI for migrations
+│   └── eslint.config.mjs   - ESLint configuration
+├── core/                   - Infrastructure layer
+│   └── database/
+│       ├── database.module.ts - Database connection module
+│       └── migrations/        - TypeORM migrations (future)
+└── features/               - Business features
+    └── users/              - User management (boilerplate)
+        ├── dto/
+        │   ├── create-user.dto.ts
+        │   └── update-user.dto.ts
+        └── entities/
+            └── user.entity.ts
+```
 
 ---
 
 ### src/config/
-**Purpose:** Configuration management for different environments and services
+**Purpose:** Centralized configuration management using @nestjs/config
 
-**Contains:**
-- `database.config.ts` - TypeORM/database configuration
-- `typeorm-cli.config.ts` - TypeORM CLI configuration for migrations
-- `jwt.config.ts` - JWT authentication settings
-- `redis.config.ts` - Redis/cache configuration
-- `queue.config.ts` - Bull queue configuration
-- `app.config.ts` - General application settings
+**Current Files:**
+- `app.config.ts` - General application settings (port, environment)
+- `database.config.ts` - PostgreSQL and TypeORM configuration
+- `jwt.config.ts` - JWT token settings for authentication
+- `typeorm-cli.config.ts` - Configuration for TypeORM CLI commands
+- `eslint.config.mjs` - ESLint 9 flat config
 
 **Rules:**
 - Uses @nestjs/config for environment variable management
-- Each config file exports a function returning configuration object
-- Includes validation schemas for environment variables
+- Each config file exports a registerAs() function
+- Validates environment variables
 - No business logic, only configuration mapping
+
+**Example:**
+```typescript
+export const appConfig = registerAs('app', () => ({
+  port: parseInt(process.env.PORT || '3000', 10),
+  environment: process.env.NODE_ENV || 'development',
+}));
+```
 
 ---
 
 ### src/core/
 **Purpose:** Infrastructure and technical foundation layer
 
-**Contains:**
+**Current Structure:**
+- `database/` - Database connection and migrations setup
 
-#### core/database/
-- `migrations/` - TypeORM migration files
-- `seeds/` - Database seeding scripts for development
-- `database.module.ts` - Database connection module
-
-#### core/cache/
-- Cache module setup (Redis)
-- Cache manager configuration
-
-#### core/queue/
-- `processors/` - Base queue processors
-- `queue.module.ts` - Bull queue setup
-
-#### core/logger/
-- Custom logging implementation
-- Log formatting and transport configuration
-
-#### core/health/
-- Health check endpoints
-- Database, Redis, and service health indicators
+**Intended for:**
+- `cache/` - Redis/caching module (future)
+- `queue/` - Bull queue setup (future)
+- `logger/` - Custom logging (future)
+- `health/` - Health check services (future)
 
 **Rules:**
 - Infrastructure concerns only
@@ -106,163 +125,145 @@ scripts/          - Utility scripts for development/deployment
 ---
 
 ### src/features/
-**Purpose:** Business domain logic organized by feature/domain
+**Purpose:** Business domain logic organized by feature
 
-**Structure Pattern (per feature):**
+**Current Features:**
+- `users/` - User entity and DTOs (authentication-ready boilerplate)
+  - Includes User entity with TypeORM decorators
+  - Create and Update DTOs with validation
+  - Ready for authentication implementation
+
+**Standard Feature Structure:**
 ```
 features/[feature-name]/
-├── dto/              - Data Transfer Objects (request/response)
-├── entities/         - TypeORM entities (database models)
+├── dto/              - Data Transfer Objects
+├── entities/         - TypeORM entities
 ├── interfaces/       - Feature-specific interfaces
-├── guards/           - Feature-specific guards
-├── strategies/       - Passport strategies (for auth)
-├── processors/       - Feature-specific queue processors
-├── subscribers/      - TypeORM entity subscribers
+├── guards/           - Feature guards
 ├── [feature].controller.ts  - HTTP endpoints
 ├── [feature].service.ts     - Business logic
 ├── [feature].module.ts      - Feature module
 └── [feature].repository.ts  - Custom repositories (optional)
 ```
 
-**Current Features:**
-- `auth/` - Authentication and authorization
-- `users/` - User management
-
 **Rules:**
 - Each feature is self-contained
-- Features can import from common/, core/, and shared/
+- Features can import from config/ and core/
 - Features should minimize dependencies on other features
 - All business logic stays in services
 - Controllers are thin, delegating to services
 - Each feature has its own module
 
+**Adding a New Feature:**
+```bash
+nest g module features/products
+nest g controller features/products
+nest g service features/products
+```
+
 ---
 
-### src/shared/
-**Purpose:** Reusable business logic services used across multiple features
+## src/main.ts
+**Purpose:** Application entry point and bootstrap
 
-**Contains:**
-- `email/` - Email service (SendGrid, SES, etc.)
-- `sms/` - SMS service (Twilio, etc.)
-- `file-upload/` - File handling (S3, local storage)
-- `payment/` - Payment processing (Stripe, PayPal)
+**Current Setup:**
+- NestFactory bootstrap
+- Global validation pipe
+- CORS configuration
+- Port configuration from environment
 
-**Rules:**
-- Contains business logic (unlike common/)
-- Provides services consumed by features
-- Each shared module should be independent
-- Can depend on core/ infrastructure
-
-**Difference from common/:**
-- common/ = pure utilities, no business logic
-- shared/ = business logic services reused by features
+**Can be extended with:**
+- Swagger documentation setup
+- Helmet security headers
+- Rate limiting
+- Logging configuration
+- Graceful shutdown hooks
 
 ---
 
 ## test/ Directory
 
-### test/unit/
-**Purpose:** Unit tests for isolated components
-
-**Structure:** Mirrors src/ structure
+**Current Structure:**
 ```
-unit/
-├── features/
-│   ├── auth/
-│   │   ├── auth.service.spec.ts
-│   │   └── auth.controller.spec.ts
-│   └── users/
-└── common/
+test/
+├── app.e2e-spec.ts  - End-to-end tests for health endpoint
+└── jest-e2e.json    - E2E test configuration
 ```
 
-**Rules:**
-- Test single units in isolation
-- Mock all dependencies
-- Fast execution
-- File naming: `*.spec.ts`
+**Test Organization (recommended):**
+**Test Organization (recommended):**
+```
+test/
+├── unit/              - Unit tests (co-located with source is also fine)
+├── integration/       - Integration tests
+├── e2e/              - End-to-end tests
+│   ├── fixtures/     - Test data
+│   └── *.e2e-spec.ts
+└── helpers/          - Test utilities
+```
 
----
+**Current Tests:**
+- Health check endpoint E2E tests
+- App controller unit tests (in src/)
 
-### test/integration/
-**Purpose:** Integration tests for multiple components working together
+**Testing Commands:**
+- `npm test` - Run unit tests
+- `npm run test:e2e` - Run E2E tests
+- `npm run test:cov` - Test coverage
+- `npm run test:watch` - Watch mode
 
-**Contains:**
-- Tests for database interactions
-- Tests for queue processing
-- Tests for multiple services interacting
-
-**Rules:**
-- May use test database
-- Tests actual integration between components
-- File naming: `*.integration.spec.ts`
-
----
-
-### test/e2e/
-**Purpose:** End-to-end tests simulating real user scenarios
-
-**Contains:**
-- Full HTTP request/response tests
-- Multi-step workflow tests
-- `fixtures/` - Test data and factories
-
-**Rules:**
-- Tests complete user flows
-- Uses test database
-- File naming: `*.e2e-spec.ts`
-- Should run against a real (test) application instance
-
----
-
-### test/helpers/
-**Purpose:** Shared test utilities
-
-**Contains:**
-- `test-database.helper.ts` - Database setup/teardown
-- `mock-factory.helper.ts` - Factory functions for test data
-- `test-app.helper.ts` - Application bootstrap helpers
+**File Naming:**
+- Unit tests: `*.spec.ts` (next to source file or in test/unit/)
+- E2E tests: `*.e2e-spec.ts` (in test/ directory)
 
 ---
 
 ## docs/ Directory
-**Purpose:** User-facing documentation
+**Purpose:** Project documentation
 
-**Contains:**
-- `api/` - API documentation (Swagger, Postman collections)
-- `architecture/` - Architecture decisions and diagrams
-  - `ADRs/` - Architecture Decision Records
-- `guides/` - Development guides and tutorials
-- `database/` - Database schema documentation and ERDs
+**Current Structure:**
+```
+docs/
+├── database/
+│   └── DATABASE.md       - Database documentation
+├── guides/
+│   └── VALIDATION.md     - Validation guide
+└── FOLDER_STRUCTURE.md   - This file
+```
 
-**Rules:**
-- Written for human developers
-- Keep up to date with code changes
-- Use clear examples
-
----
-
-## ai-docs/ Directory
-**Purpose:** AI assistant reference documentation
-
-**Contains:**
-- This file (FOLDER_STRUCTURE.md)
-- Additional context files for AI to reference
-- Development patterns and conventions
-
-**Rules:**
-- Technical and detailed
-- Optimized for AI comprehension
-- Updated as architecture evolves
+**Add as needed:**
+- API documentation
+- Architecture Decision Records (ADRs)
+- Deployment guides
+- Development workflows
 
 ---
 
 ## scripts/ Directory
 **Purpose:** Automation and utility scripts
 
-**Contains:**
-- `generate-migration.sh` - Create new TypeORM migration
-- `seed-database.sh` - Run database seeders
-- `deploy.sh` - Deployment automation
+**Current Files:**
+- `generate-migration.sh` - Create TypeORM migrations
+
+**Add as needed:**
+- Database seeding scripts
+- Deployment automation
+- Data migration scripts
+- Development setup scripts
+
+---
+
+## .husky/ Directory
+**Purpose:** Git hooks for code quality
+
+**Current Hooks:**
+- `pre-commit` - Runs lint-staged (ESLint + Prettier on staged files)
+- `pre-push` - Runs tests and build before pushing
+
+**Benefits:**
+- Ensures consistent code formatting
+- Catches errors before commit
+- Validates build before push
 
 ---
 
@@ -270,14 +271,13 @@ unit/
 
 **Where does my code go?**
 
-1. **Is it infrastructure setup?** → `core/`
-2. **Is it a pure utility with no business logic?** → `common/`
-3. **Is it a reusable business service?** → `shared/`
-4. **Is it domain-specific business logic?** → `features/`
-5. **Is it configuration?** → `config/`
-6. **Is it a test?** → `test/unit/`, `test/integration/`, or `test/e2e/`
-7. **Is it documentation?** → `docs/` or `ai-docs/`
-8. **Is it a script?** → `scripts/`
+1. **Is it configuration?** → `src/config/`
+2. **Is it infrastructure (database, cache, etc.)?** → `src/core/`
+3. **Is it domain/business logic?** → `src/features/[feature-name]/`
+4. **Is it a test?** → `test/` or co-located `*.spec.ts`
+5. **Is it documentation?** → `docs/`
+6. **Is it a utility script?** → `scripts/`
+7. **Is it the app entry point?** → `src/main.ts`
 
 ---
 
@@ -287,75 +287,212 @@ unit/
 - Services: `[feature].service.ts`
 - Modules: `[feature].module.ts`
 - Entities: `[name].entity.ts`
-- DTOs: `[name].dto.ts` or `create-[name].dto.ts`
-- Interfaces: `[name].interface.ts`
+- DTOs: `create-[name].dto.ts`, `update-[name].dto.ts`
 - Guards: `[name].guard.ts`
 - Decorators: `[name].decorator.ts`
 - Pipes: `[name].pipe.ts`
 - Filters: `[name].filter.ts`
 - Interceptors: `[name].interceptor.ts`
 - Unit tests: `*.spec.ts`
-- Integration tests: `*.integration.spec.ts`
 - E2E tests: `*.e2e-spec.ts`
 
 ---
 
-## Import Rules
+## Expanding the Structure
 
-**Allowed Import Directions:**
+As your application grows, consider adding:
+
+### src/common/ (When Needed)
+For shared utilities used across features:
+- `decorators/` - Custom decorators
+- `filters/` - Exception filters
+- `guards/` - Shared guards
+- `interceptors/` - Shared interceptors
+- `pipes/` - Validation pipes
+- `interfaces/` - Shared TypeScript interfaces
+- `constants/` - Application constants
+- `utils/` - Pure utility functions
+
+### src/shared/ (When Needed)
+For reusable business services:
+- `email/` - Email service
+- `file-upload/` - File handling
+- `payment/` - Payment processing
+- `notifications/` - Notification service
+
+**Key Difference:**
+- `common/` = Technical utilities (no business logic)
+- `shared/` = Business services (reusable across features)
+
+---
+
+## Database & TypeORM
+
+**Entity Location:** 
+- Entities live in their feature: `features/users/entities/user.entity.ts`
+
+**Migrations:**
+- Location: `src/core/database/migrations/`
+- Generate: `npm run migration:generate -- src/core/database/migrations/MigrationName`
+- Run: `npm run migration:run`
+- Revert: `npm run migration:revert`
+
+**Configuration:**
+- Connection: `src/config/database.config.ts`
+- CLI: `src/config/typeorm-cli.config.ts`
+
+---
+
+## Environment Variables
+
+**Required Variables (.env):**
+```bash
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=AppUser
+DB_PASSWORD=AppUser
+DB_DATABASE=NestJSBase
+
+# Application
+NODE_ENV=development
+PORT=3000
+
+# JWT
+JWT_SECRET=your-secret-key
+JWT_EXPIRATION=3600
 ```
-features/ → can import from → common/, core/, shared/
-shared/   → can import from → common/, core/
-core/     → can import from → common/
+
+**Best Practices:**
+- Never commit `.env` to Git
+- Use `.env.example` as a template
+- Validate environment variables in config files
+- Use different values per environment
+
+---
+
+## Import Guidelines
+
+**Recommended Import Order:**
+1. External packages (NestJS, TypeORM, etc.)
+2. Config imports
+3. Core imports
+4. Shared/Common imports
+5. Feature imports
+6. Relative imports
+
+**Import Rules:**
+```
+features/ → can import → config/, core/, common/, shared/
+shared/   → can import → config/, core/, common/
+core/     → can import → config/, common/
 common/   → standalone (no internal dependencies)
+config/   → standalone (only @nestjs/config)
 ```
 
-**Forbidden:**
-- core/ should NOT import from features/ or shared/
-- common/ should NOT import from any internal folder
-- Minimize feature-to-feature dependencies
+**Avoid:**
+- Circular dependencies between features
+- Features importing from other features (use shared/ instead)
+- Core importing from features
 
 ---
 
-## Module Organization Best Practices
+## Module Organization
 
-1. **Keep features independent** - Minimize cross-feature dependencies
-2. **One feature = one module** - Each feature folder exports one module
-3. **Lazy load when possible** - Use dynamic imports for large features
-4. **Shared modules are global** - Use @Global() decorator for widely-used modules
-5. **Configuration is validated** - Use class-validator in config files
+1. **Root Module** (`app.module.ts`)
+   - Imports ConfigModule globally
+   - Imports DatabaseModule
+   - Imports feature modules
+   - Provides app-level controllers/services
+
+2. **Feature Modules**
+   - Self-contained
+   - Export services that other modules might need
+   - Import what they need from core/shared
+
+3. **Core Modules**
+   - Often global (@Global() decorator)
+   - Provide infrastructure services
 
 ---
 
-## Database & TypeORM Organization
+## Code Quality Tools
 
-- **Entities** live in their feature folder: `features/users/entities/user.entity.ts`
-- **Migrations** live in core: `core/database/migrations/`
-- **Seeds** live in core: `core/database/seeds/`
-- **Custom repositories** live with their feature (optional)
-- **Subscribers** live in feature folder: `features/users/subscribers/`
+**ESLint:**
+- Config: `src/config/eslint.config.mjs`
+- Run: `npm run lint`
+- Auto-fix on commit via Husky
+
+**Prettier:**
+- Config: `.prettierrc`
+- Run: `npm run format`
+- Auto-format on commit via Husky
+
+**TypeScript:**
+- Config: `tsconfig.json`
+- Strict mode enabled
+- Path aliases configured if needed
 
 ---
 
 ## Testing Strategy
 
-1. **Unit Tests** - 70% of tests, fast, isolated
-2. **Integration Tests** - 20% of tests, test component interactions
-3. **E2E Tests** - 10% of tests, critical user flows only
+**Unit Tests:**
+- Test individual components in isolation
+- Mock all dependencies
+- Co-locate with source or in test/unit/
+- Goal: 80%+ coverage
 
-**Coverage Goals:**
-- Overall: 80%+
-- Services: 90%+
-- Controllers: 80%+
-- Utilities: 95%+
+**E2E Tests:**
+- Test complete user flows
+- Test actual HTTP requests
+- Use test database
+- Focus on critical paths
+- Located in test/ directory
+
+**Pre-push:**
+- All tests must pass before push
+- Enforced by Husky hook
 
 ---
 
 ## Future Considerations
 
 As the application scales, consider:
-- Adding `modules/` within features for sub-domains
-- Implementing CQRS (add `commands/` and `queries/`)
-- Adding `events/` folders for event-driven architecture
-- Microservices separation if needed
-- GraphQL layer (add `graphql/` with resolvers)
+
+1. **Microservices**
+   - Split features into separate services
+   - Add gRPC or message queue communication
+
+2. **CQRS**
+   - Add `commands/` and `queries/` folders
+   - Separate read and write operations
+
+3. **Event-Driven**
+   - Add `events/` folders
+   - Implement event sourcing
+
+4. **GraphQL**
+   - Add `graphql/` with resolvers
+   - Replace or supplement REST APIs
+
+5. **Monorepo**
+   - Use Nx or similar for multiple apps
+   - Share code between services
+
+---
+
+## Summary
+
+This boilerplate provides a solid foundation with:
+- ✅ Clean folder structure
+- ✅ TypeScript + NestJS best practices
+- ✅ Database integration ready
+- ✅ Testing setup
+- ✅ Code quality tools
+- ✅ Git hooks for consistency
+- ✅ Health check endpoint
+- ✅ Configuration management
+- ✅ Documentation
+
+Start building your features in `src/features/` and expand the structure as your application grows!
