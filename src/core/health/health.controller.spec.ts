@@ -1,21 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
+import { HealthController } from './health.controller';
 
-describe('AppController', () => {
-  let appController: AppController;
+describe('HealthController', () => {
+  let healthController: HealthController;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
+      controllers: [HealthController],
       providers: [],
     }).compile();
 
-    appController = app.get<AppController>(AppController);
+    healthController = app.get<HealthController>(HealthController);
   });
 
   describe('health check', () => {
     it('should return status ok and datetime', () => {
-      const result = appController.getHealth();
+      const result = healthController.getHealth();
       expect(result.status).toBe('ok');
       expect(result.datetime).toBeDefined();
       expect(new Date(result.datetime).toString()).not.toBe('Invalid Date');
@@ -23,7 +23,7 @@ describe('AppController', () => {
 
     it('should return current datetime in ISO format', () => {
       const before = new Date();
-      const result = appController.getHealth();
+      const result = healthController.getHealth();
       const after = new Date();
       const resultDate = new Date(result.datetime);
 
