@@ -4,6 +4,8 @@ import { DatabaseModule } from './core/database/database.module';
 import { QueueModule } from './core/queue/queue.module';
 import { HealthModule } from './core/health/health.module';
 import { TestQueueModule } from './features/test-queue/test-queue.module';
+import { AuthModule } from './features/auth/auth.module';
+import { UsersModule } from './features/users/users.module';
 import { databaseConfig } from './config/database.config';
 import { appConfig } from './config/app.config';
 import { jwtConfig } from './config/jwt.config';
@@ -20,6 +22,8 @@ import { queueConfig } from './config/queue.config';
     QueueModule,
     HealthModule,
     TestQueueModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [],
